@@ -1,8 +1,12 @@
 package cn.cqy.pay.service.impl;
 
+import cn.cqy.pay.dao.PayInfoMapper;
+import cn.cqy.pay.enums.PayPlatformEnum;
+import cn.cqy.pay.pojo.PayInfo;
 import cn.cqy.pay.service.IPayService;
 import com.lly835.bestpay.enums.BestPayPlatformEnum;
 import com.lly835.bestpay.enums.BestPayTypeEnum;
+import com.lly835.bestpay.enums.OrderStatusEnum;
 import com.lly835.bestpay.model.PayRequest;
 import com.lly835.bestpay.model.PayResponse;
 import com.lly835.bestpay.service.BestPayService;
@@ -19,8 +23,17 @@ public class PayServiceImpl implements IPayService {
     @Autowired
     private BestPayService bestPayService;
 
+    @Autowired
+    private PayInfoMapper payInfoMapper;
+
     @Override
     public PayResponse create(String orderId, BigDecimal amount, BestPayTypeEnum bestPayTypeEnum) {
+        //写入数据库
+        PayInfo payInfo = new PayInfo(Long.parseLong(orderId),
+                PayPlatformEnum.getByBestPayTypeEnum(bestPayTypeEnum).getCode(),
+                OrderStatusEnum.NOTPAY.name(),
+                amount);
+        payInfoMapper.insertSelective(payInfo);
 
         PayRequest request = new PayRequest();
         request.setOrderName("9203596-最好的支付sdk");
